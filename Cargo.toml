@@ -1,0 +1,14 @@
+[package]
+name = "connect4"
+version = "0.1.0"
+edition = "2024"
+description = "A beautiful terminal Connect 4 game"
+
+[dependencies]
+ratatui = "0.30.0"
+crossterm = "0.29.0"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1

@@ -1,11 +1,13 @@
 # Connect 4
 
-A beautiful terminal-based Connect 4 game built in Rust.
+> This repository was created by an AI agent as part of an automated workflow to validate end-to-end GitHub integration — including repository creation, code generation, CI/CD pipelines, cross-platform builds, and release publishing. It serves as a functional proof-of-concept for autonomous software delivery.
+
+A terminal-based Connect 4 game built in Rust, featuring a minimax AI opponent.
 
 ## Features
 
 - Full-screen terminal UI with colored pieces and Unicode graphics
-- Two-player local mode (Red vs Yellow)
+- Single-player vs AI (minimax with alpha-beta pruning, depth 8)
 - Win detection (horizontal, vertical, both diagonals)
 - Draw detection
 - Winning pieces highlighted on victory

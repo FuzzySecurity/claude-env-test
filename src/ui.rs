@@ -19,7 +19,7 @@ fn player_color(player: Player) -> Color {
     }
 }
 
-pub fn render(frame: &mut Frame, board: &Board, cursor_col: usize) {
+pub fn render(frame: &mut Frame, board: &Board, cursor_col: usize, ai_thinking: bool) {
     let area = frame.area();
 
     // Calculate board dimensions: each cell is 4 chars wide ("│ ● "), plus final "│"
@@ -136,7 +136,7 @@ pub fn render(frame: &mut Frame, board: &Board, cursor_col: usize) {
     lines.push(Line::from(""));
 
     // Status line
-    lines.push(build_status_line(board));
+    lines.push(build_status_line(board, ai_thinking));
 
     // Help line
     lines.push(build_help_line(board));
@@ -146,7 +146,7 @@ pub fn render(frame: &mut Frame, board: &Board, cursor_col: usize) {
 }
 
 fn build_cursor_line(cursor_col: usize, board: &Board) -> Line<'static> {
-    if board.state() != GameState::InProgress {
+    if board.state() != GameState::InProgress || board.current_player() == Player::Yellow {
         return Line::from("");
     }
     let color = player_color(board.current_player());
@@ -195,28 +195,47 @@ fn build_numbers_line(cursor_col: usize, board: &Board) -> Line<'static> {
     Line::from(spans)
 }
 
-fn build_status_line(board: &Board) -> Line<'static> {
+fn player_label(player: Player) -> &'static str {
+    match player {
+        Player::Red => "You",
+        Player::Yellow => "AI",
+    }
+}
+
+fn build_status_line(board: &Board, ai_thinking: bool) -> Line<'static> {
     match board.state() {
         GameState::InProgress => {
+            if ai_thinking {
+                return Line::from(Span::styled(
+                    "AI is thinking...",
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD),
+                ));
+            }
             let player = board.current_player();
             let color = player_color(player);
             Line::from(vec![
                 Span::styled(
-                    format!("{}", player),
+                    player_label(player).to_string(),
                     Style::default().fg(color).add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("'s turn", Style::default().fg(Color::White)),
+                Span::styled("r turn", Style::default().fg(Color::White)),
             ])
         }
         GameState::Won(player) => {
             let color = player_color(player);
             Line::from(vec![
                 Span::styled(
-                    format!("{}", player),
+                    player_label(player).to_string(),
                     Style::default().fg(color).add_modifier(Modifier::BOLD),
                 ),
                 Span::styled(
-                    " wins! ",
+                    if player == Player::Red {
+                        " win! "
+                    } else {
+                        " wins! "
+                    },
                     Style::default()
                         .fg(Color::White)
                         .add_modifier(Modifier::BOLD),

@@ -1,3 +1,4 @@
+mod ai;
 mod game;
 mod input;
 mod ui;
@@ -10,7 +11,7 @@ use crossterm::{
 };
 use ratatui::{DefaultTerminal, Terminal, prelude::CrosstermBackend};
 
-use game::{Board, COLS, GameState};
+use game::{Board, COLS, GameState, Player};
 use input::Action;
 
 fn main() -> io::Result<()> {
@@ -40,9 +41,24 @@ fn restore_terminal() -> io::Result<()> {
 fn run(terminal: &mut DefaultTerminal) -> io::Result<()> {
     let mut board = Board::new();
     let mut cursor_col: usize = 3;
+    let mut ai_thinking = false;
 
     loop {
-        terminal.draw(|frame| ui::render(frame, &board, cursor_col))?;
+        terminal.draw(|frame| ui::render(frame, &board, cursor_col, ai_thinking))?;
+
+        // AI's turn
+        if board.state() == GameState::InProgress && board.current_player() == Player::Yellow {
+            if !ai_thinking {
+                ai_thinking = true;
+                continue; // Re-render with "AI is thinking..." before computing
+            }
+            let col = ai::best_move(&board);
+            let _ = board.drop_piece(col);
+            ai_thinking = false;
+            continue;
+        }
+
+        ai_thinking = false;
 
         match input::read_action()? {
             Action::MoveLeft => cursor_col = cursor_col.saturating_sub(1),
